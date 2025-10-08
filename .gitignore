@@ -1,13 +1,47 @@
-# Dependencias de Node.js (Muy Pesadas)
+----------------------------------------------------------------
+
+ARCHIVOS CRÍTICOS Y SECRETOS
+
+----------------------------------------------------------------
+
+1. Variables de Entorno (¡CRÍTICO! NO deben subir NUNCA)
+
+.env
+/e-learning-backend/.env
+/e-learning-frontend/.env
+
+----------------------------------------------------------------
+
+DEPENDENCIAS Y CARPETAS DE BUILD
+
+----------------------------------------------------------------
+
+2. Directorios de Dependencias (No se deben subir, son pesados)
+
 /e-learning-backend/node_modules
 /e-learning-frontend/node_modules
 
-# Variables de Entorno y Configuración Secreta
-.env
-.env.local
+3. Archivos de Salida de Build (Ej. para Vite, React)
 
-# Archivos de logs, cache y distribución
-npm-debug.log*
-yarn-debug.log*
-.DS_Store
 /e-learning-frontend/dist
+
+----------------------------------------------------------------
+
+ARCHIVOS DE REGISTRO Y LOCALES
+
+----------------------------------------------------------------
+
+Logs y Caché
+
+.log
+npm-debug.log
+.npm
+.eslintcache
+
+macOS Files
+
+.DS_Store
+
+Windows Files
+
+Thumbs.db
