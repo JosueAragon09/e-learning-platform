@@ -1,92 +1,46 @@
-const mongoose = require('mongoose');
+// routes/course.js
+const express = require('express');
+const router = express.Router();
 
-const authMiddleware = require('../middleware/authMiddleware');
+// Importar el controlador de curso
+const courseController = require('../controllers/courseController'); 
 
-const CourseSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: [true, 'El título es obligatorio'],
-        trim: true,
-        unique: true
-    },
-    description: {
-        type: String,
-        required: [true, 'La descripción es obligatoria']
-    },
-    price: {
-        type: Number,
-        required: [true, 'El precio es obligatorio'],
-        default: 0
-    },
-    
-    instructor: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', 
-        required: true 
-    },
-    
-    published: {
-        type: Boolean,
-        default: false
-    }
-}, {
-    timestamps: true
-});
+// Importar los Middlewares
+// 1. Autenticación (verifica el JWT y adjunta req.user)
+const authMiddleware = require('../middleware/authMiddleware'); 
+// 2. Autorización (verifica si el rol es 'admin' o 'teacher')
+const { checkRole } = require('../middleware/role-checker'); // ASUME que tienes este archivo
+// 3. Multer (maneja la subida del archivo)
+const upload = require('../config/multerConfig'); // ASUME que tienes este archivo
 
-module.exports = mongoose.model('Course', CourseSchema);
+// ===================================================================
+// RUTAS DE CREACIÓN Y GESTIÓN DE CURSOS
+// ===================================================================
 
-const Course = require('../models/Course');
-
-// @desc    Crear un nuevo curso
 // @route   POST /api/courses
-// @access  Private (Solo para usuarios autenticados, se asume que solo Instructores tienen acceso a esta funcionalidad)
-exports.createCourse = async (req, res) => {
-    try {
-        // 1. Obtener el ID del instructor desde el objeto 'req.user'
-        // Este objeto fue inyectado por el authMiddleware (1.3.1) al verificar el JWT.
-        const instructorId = req.user.id; 
-        
-        // 2. Obtener los datos del cuerpo de la solicitud (req.body)
-        const { title, description, price, published } = req.body; 
+// @desc    Crear un nuevo curso con su imagen de miniatura
+// @access  Private (Solo Teacher y Admin)
+// * Esta es la implementación de la Tarea 3.1.2: Middleware en Rutas *
+router.post(
+    '/', 
+    authMiddleware,                          // 1. Verifica si el usuario está logeado
+    checkRole(['admin', 'teacher']),         // 2. Verifica si tiene el rol correcto (Autorización)
+    upload.single('courseImage'),            // 3. Middleware Multer: Espera 1 archivo con el campo 'courseImage'
+    courseController.createCourse            // 4. Llama a la lógica de creación del curso
+);
 
-        // 3. Validación básica de campos requeridos
-        if (!title || !description || price === undefined) {
-            return res.status(400).json({ 
-                message: 'Por favor, ingrese el título, descripción y precio del curso.' 
-            });
-        }
-        
-        // 4. Crear el nuevo curso
-        const newCourse = new Course({
-            title,
-            description,
-            price,
-            published,
-            instructor: instructorId // **ASIGNACIÓN CLAVE: Asigna req.user.id al campo instructor**
-        });
+// 
 
-        // 5. Guardar el curso en la base de datos
-        const course = await newCourse.save();
+// @route   GET /api/courses
+// @desc    Obtener todos los cursos públicos o propios (según el rol)
+// @access  Public/Private
+// router.get('/', courseController.getCourses); 
 
-        // 6. Respuesta de éxito
-        res.status(201).json({
-            message: 'Curso creado exitosamente',
-            course: course
-        });
+// @route   PUT /api/courses/:id
+// @desc    Actualizar un curso (Solo Admin o el Instructor dueño)
+// @access  Private
+// router.put('/:id', authMiddleware, checkRole(['admin', 'teacher']), courseController.updateCourse); 
 
-    } catch (error) {
-        // Manejo de errores de Mongoose 
-        console.error("Error al crear el curso:", error.message);
-        
-        if (error.code === 11000) { // Código para error de clave única
-            return res.status(400).json({ 
-                message: 'Ya existe un curso con este título. Por favor, elija uno diferente.' 
-            });
-        }
-        
-        res.status(500).json({ 
-            message: 'Error en el servidor al crear el curso',
-            error: error.message
-        });
-    }
-};
+
+// Exportar el router para ser usado en server.js
+module.exports = router;
