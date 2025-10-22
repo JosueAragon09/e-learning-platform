@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const userQuizScoreSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Asumiendo que tienes un modelo 'User'
+        ref: 'user', // Asumiendo que tienes un modelo 'User'
         required: true
     },
     quizId: {

@@ -1,6 +1,6 @@
 // /e-learning-backend/controllers/scoreController.js
 const UserQuizScore = require('../models/userQuizScore');
-const Quiz = require('../models/Quiz'); 
+const Quiz = require('../models/quiz'); 
 // También puede necesitar importar su modelo de usuario si va a hacer otras validaciones
 // const User = require('../models/User'); 
 
